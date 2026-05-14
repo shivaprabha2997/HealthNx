@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: healthnx
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: healthnx
+
+  template:
+    metadata:
+      labels:
+        app: healthnx
+
+    spec:
+      containers:
+      - name: healthnx
+
+        image: YOUR_ECR_IMAGE
+
+        ports:
+        - containerPort: 3000
+
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: healthnx-secret
+              key: DATABASE_URL
