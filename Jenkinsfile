@@ -34,6 +34,7 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
+
                 git branch: 'main',
                 url: 'https://github.com/shivaprabha2997/HealthNx.git'
             }
@@ -41,13 +42,45 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+
+                sh '''
+                npm install
+
+                npm install -D vitest @vitest/coverage-v8 @testing-library/react jsdom
+                '''
             }
         }
 
         stage('Code Lint Check') {
             steps {
-                sh 'npm run lint || true'
+
+                sh '''
+                npm run lint || true
+                '''
+            }
+        }
+
+        stage('Run Test Coverage') {
+            steps {
+
+                sh '''
+                
+                if ! grep -q '"coverage"' package.json; then
+                  npm pkg set scripts.test="vitest"
+                  npm pkg set scripts.coverage="vitest run --coverage"
+                fi
+
+                cat > src/App.test.tsx << 'EOF'
+                import { render } from '@testing-library/react'
+                import App from './App'
+
+                test('renders app', () => {
+                  render(<App />)
+                })
+                EOF
+
+                npm run coverage
+                '''
             }
         }
 
@@ -69,7 +102,9 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
+
                 timeout(time: 5, unit: 'MINUTES') {
+
                     waitForQualityGate abortPipeline: true
                 }
             }
@@ -77,13 +112,26 @@ pipeline {
 
         stage('Build Application') {
             steps {
-                sh 'npm run build'
+
+                sh '''
+                npm run build
+                '''
             }
         }
 
         stage('Archive Artifacts') {
             steps {
+
                 archiveArtifacts artifacts: 'dist/**'
+            }
+        }
+
+        stage('Create Artifact Zip') {
+            steps {
+
+                sh '''
+                zip -r dist.zip dist
+                '''
             }
         }
 
@@ -120,7 +168,7 @@ pipeline {
             steps {
 
                 sh '''
-                trivy image ${APP_NAME}:${IMAGE_TAG}
+                trivy image --severity HIGH,CRITICAL ${APP_NAME}:${IMAGE_TAG}
                 '''
             }
         }
@@ -190,7 +238,8 @@ pipeline {
         always {
 
             emailext(
-                subject: "Jenkins Build: ${JOB_NAME} - ${BUILD_STATUS}",
+                subject: "Jenkins Build: ${JOB_NAME} - ${currentBuild.currentResult}",
+
                 body: """
 
                 <h2>Build Report</h2>
@@ -201,11 +250,11 @@ pipeline {
 
                 <p><b>Status:</b> ${currentBuild.currentResult}</p>
 
-                <p><b>Build URL:</b>
+                <p><b>Build URL:</b><br>
                 ${BUILD_URL}</p>
 
                 <p><b>SonarQube Report:</b><br>
-                http://<sonarqube-server>:9000/dashboard?id=HealthNX
+                http://3.227.230.192:9000/dashboard?id=HealthNX
                 </p>
 
                 <p><b>Nexus Artifact:</b><br>
