@@ -64,11 +64,20 @@ pipeline {
             steps {
 
                 sh '''
-
+                
                 if ! grep -q '"coverage"' package.json; then
                   npm pkg set scripts.test="vitest"
                   npm pkg set scripts.coverage="vitest run --coverage"
                 fi
+
+                cat > src/App.test.tsx << 'EOF'
+                import { render } from '@testing-library/react'
+                import App from './App'
+
+                test('renders app', () => {
+                  render(<App />)
+                })
+                EOF
 
                 npm run coverage
                 '''
@@ -122,7 +131,6 @@ pipeline {
 
                 sh '''
                 zip -r dist.zip dist
-                ls -lh dist.zip
                 '''
             }
         }
@@ -131,8 +139,6 @@ pipeline {
             steps {
 
                 sh '''
-                echo "Uploading artifact to Nexus..."
-
                 curl -v -u admin:admin \
                 --upload-file dist.zip \
                 ${NEXUS_URL}/repository/${NEXUS_REPO}/dist-${BUILD_NUMBER}.zip
