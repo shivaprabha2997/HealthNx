@@ -7,7 +7,7 @@ pipeline {
 
     environment {
 
-        APP_NAME = "HealthNX"
+        APP_NAME = "healthnx"
 
         AWS_ACCOUNT_ID = "407876287494"
         AWS_REGION = "us-east-1"
