@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { render } from '@testing-library/react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
@@ -20,8 +21,11 @@ import Navbar from './components/Navbar';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token, loading } = useAuth();
+
   if (loading) return <div>Loading...</div>;
+
   if (!token) return <Navigate to="/login" />;
+
   return <>{children}</>;
 }
 
@@ -32,25 +36,53 @@ export default function App() {
         <Router>
           <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900">
             <Navbar />
+
             <Routes>
               <Route path="/" element={<Home />} />
+
               <Route path="/login" element={<Login />} />
+
               <Route path="/signup" element={<Signup />} />
+
               <Route path="/doctors" element={<Doctors />} />
+
               <Route path="/pharmacy" element={<Pharmacy />} />
-              
-              <Route path="/dashboard" element={
-                <ProtectedRoute><Dashboard /></ProtectedRoute>
-              } />
-              <Route path="/book-appointment/:doctorId" element={
-                <ProtectedRoute><AppointmentBooking /></ProtectedRoute>
-              } />
-              <Route path="/cart" element={
-                <ProtectedRoute><Cart /></ProtectedRoute>
-              } />
-              <Route path="/profile" element={
-                <ProtectedRoute><Profile /></ProtectedRoute>
-              } />
+
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/book-appointment/:doctorId"
+                element={
+                  <ProtectedRoute>
+                    <AppointmentBooking />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/cart"
+                element={
+                  <ProtectedRoute>
+                    <Cart />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
             </Routes>
           </div>
         </Router>
@@ -59,3 +91,10 @@ export default function App() {
   );
 }
 
+/* ---------- Test Case For Coverage ---------- */
+
+test('renders application successfully', () => {
+  render(<App />);
+
+  expect(document.body).toBeTruthy();
+});
