@@ -18,7 +18,7 @@ pipeline {
 
         SONAR_HOME = tool 'sonar-scanner'
 
-        NEXUS_URL = "http://3.227.230.192:8081"
+        NEXUS_URL = "http://44.197.239.240:8081"
         NEXUS_REPO = "healthnx-repo"
 
         EMAIL = "sivaprabha997@gmail.com"
