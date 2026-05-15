@@ -154,9 +154,11 @@ pipeline {
                 '''
             }
         }
-        stage('Docker Run') {
+       stage('Docker Run') {
             steps {
                 sh '''
+                docker rm -f ${APP_NAME} || true
+
                 docker run -d --name ${APP_NAME} -p 3000:3000 ${APP_NAME}:${IMAGE_TAG}
                 '''
             }
